@@ -14,9 +14,11 @@ import pycurl
 import random
 import os
 
+TIKTOK_API_CHECK_PROFILE = "/aweme/v1/user/profile/self/?iid=7036871457192724229&channel=googleplay&app_name=musical_ly&version_code=220204&device_platform=android&device_type=G011A&os_version=7.1.2&user_id="
+TIKTOK_API_EDIT_PROFILE = "/passport/login_name/update/?os_api=25&device_type=G011A&app_name=musical_ly&channel=googleplay&device_platform=android&version_code=200705&os_version=7.1.2&aid=1233"
+TIKTOK_API_ACTUAL_EDIT_PROFILE = "/aweme/v1/commit/user/?version_name=20.7.5&channel=googleplay&device_platform=android&device_id=7035485364727465477&device_brand=google&aid=1233"
+
 TIKTOK_COLOR = ["F20953", "01F2E9"]
-TIKTOK_API_CHECK_PROFILE = "/aweme/v1/user/profile/other/?iid=7035654756384163590&channel=googleplay&app_name=musical_ly&version_code=2215&device_platform=android&device_type=G011A&os_version=7.1.2&user_id="
-TIKTOK_API_EDIT_PROFILE = "/aweme/v1/commit/user/?version_name=20.7.5&channel=googleplay&device_platform=android&device_id=7035485364727465477&device_brand=google&aid=1233"
 
 class Util():
     def checkFiles(self):
@@ -77,7 +79,7 @@ class Util():
         f.write("Email: " + "".join(unformattedSession).split(":")[0] + "\n")
         f.write("Password: " + str(unformattedSession).split(":")[1] + "\n")
         f.write("Session: " + session + "\n\n")
-        f.write("Logs - Autoclaimer claimed: @{} at {} from {:,} usernames - {} \n".format(claimeduser ,datetime.now().strftime("%Y-%m-%d"), len(open("./data/usernames.txt").read().splitlines()), claimLogs))
+        f.write("Logs - Claimed: @{} at {} from {:,} usernames - {} \n".format(claimeduser ,datetime.now().strftime("%Y-%m-%d"), len(open("./data/usernames.txt").read().splitlines()), claimLogs))
 
         return f.close()
 
@@ -92,13 +94,15 @@ class Util():
 class Http():
     def __init__(self):
         super(Http, self).__init__()
-        self.url = "https://api19-va.tiktokv.com"
+        self.url = "https://api16-normal-useast5.us.tiktokv.com"
 
     def createHttpClient(self):
+        self.profile_ep = self.url + TIKTOK_API_ACTUAL_EDIT_PROFILE
         self.check_ep = self.url + TIKTOK_API_CHECK_PROFILE
         self.claim_ep = self.url + TIKTOK_API_EDIT_PROFILE
 
         HttpClient = pycurl.Curl()
+        
         return "unique" in self.httpGet(HttpClient, "100")
 
     def httpGet(self, httpClient, user_id):
@@ -107,25 +111,25 @@ class Http():
         httpClient.setopt(pycurl.SSL_VERIFYPEER, 0)
         httpClient.setopt(pycurl.SSL_VERIFYHOST, 0)
         httpClient.setopt(pycurl.NOSIGNAL, 10)
-        
-        httpClient.setopt(pycurl.HTTPHEADER, ["X-Khronos: 1638226753", "X-Tt-Token: 03fad6140bf383008adcd837427be9818e04dd8728918c093265012c3fb812551e8945bcb9ab0f56d6ee755e42c3469307101afc15ab0d2273e24e9e4359c29172b35a79b4516af02ba0c4f308e21a5d4c7975dd47d3640824a7235641efcda5e6ef9-1.0.1", "sdk-version: 2", "passport-sdk-version: 19", "User-Agent: okhttp/3.12.1", "Cache-Control: no-cache"])
-        httpClient.setopt(pycurl.USERAGENT, "okhttp/3.12.1")
+
+        httpClient.setopt(pycurl.HTTPHEADER, ["X-Tt-Token: 047014006cdda0cf16b0bcf9085e1494d305a26f9999b94d82f19a098604c05c28e3d953c05ce8223a67918d3215f340605a5a531c2249647985b260fbee22f02fea1348a791d37ffee3f5bded56556d28b0cc97d5ead116d0ba573de0a48477f825b-1.0.1"])
+        httpClient.setopt(pycurl.USERAGENT, "com.zhiliaoapp.musically/2022202040 (Linux; U; Android 7.1.2; en_US; G011A; Build/N2G48H;tt-ok/3.10.0.2)")
 
         return httpClient.perform_rs()
 
     def httpClaim(self, httpClient, username, session):
         httpClient.setopt(pycurl.URL, self.claim_ep)
 
+        httpClient.setopt(pycurl.NOSIGNAL, 25)
         httpClient.setopt(pycurl.SSL_VERIFYPEER, 0)
         httpClient.setopt(pycurl.SSL_VERIFYHOST, 0)
-        httpClient.setopt(pycurl.NOSIGNAL, 10)
 
-        httpClient.setopt(pycurl.USERAGENT, "com.zhiliaoapp.musically/2018071950 (Linux; U; Android 8.0.0; ar_SA; AGS-L09; Build/HUAWEIAGS-L09; Cronet/58.0.2991.0)")
-        httpClient.setopt(pycurl.HTTPHEADER, ["X-Gorgon: 0404e0d640050bae165e3fb3061d5a629479c3734318d12bbe53"])
-        httpClient.setopt(pycurl.POSTFIELDS, f"unique_id={username}&nickname=fatal&signature=Fatal's Tiktok Autoclaimer")
-        httpClient.setopt(pycurl.COOKIE, f"sessionid={session}")
+        httpClient.setopt(pycurl.COOKIE, f"Cookie: sessionid={session}; sessionid_ss={session}; install_id=7024964356334372614")
+        httpClient.setopt(pycurl.HTTPHEADER, ["Cache-Control: no-cache", "passport-sdk-version: 19"])
+        httpClient.setopt(pycurl.POSTFIELDS, f"login_name={username}")
 
         return httpClient.perform_rs()
+
 
     def httpUserId(self, httpClient, username, user_id, session):
         if not username:
@@ -141,6 +145,20 @@ class Http():
         httpClient.setopt(pycurl.COOKIE, f"sessionid={session}")
 
         return (httpClient.perform_rs())
+
+    def httpBio(self, httpClient, session):
+        httpClient.setopt(pycurl.URL, self.profile_ep)
+
+        httpClient.setopt(pycurl.SSL_VERIFYPEER, 0)
+        httpClient.setopt(pycurl.SSL_VERIFYHOST, 0)
+        httpClient.setopt(pycurl.NOSIGNAL, 25)
+
+        httpClient.setopt(pycurl.HTTPHEADER, ["X-Gorgon: 0404e0d640050bae165e3fb3061d5a629479c3734318d12bbe53"])
+        httpClient.setopt(pycurl.POSTFIELDS, "nickname=fatal&signature=Fatal's Tiktok Autoclaimer")
+        httpClient.setopt(pycurl.COOKIE, f"sessionid={session}")
+        httpClient.setopt(pycurl.USERAGENT, "okhttp/3.12.1")
+
+        return httpClient.perform_rs()
 
 class Discord():
     def __init__(self):
@@ -226,52 +244,56 @@ class Turbo():
         self.sessions = open("./data/sessions.txt").read().splitlines()
                 
     def claimer(self):
-        httpClient = pycurl.Curl()
+        try:
+            httpClient = pycurl.Curl()
 
-        while 1:
-            usernames = self.queue.get()
-            username, user_id = usernames.split(":")[0], usernames.split(":")[1]
+            while 1:
+                usernames = self.queue.get()
+                username, user_id = usernames.split(":")[0], usernames.split(":")[1]
 
-            sessions = random.choice(self.sessions)
-            session = sessions.split(":")[2]
-            unformattedSessions = sessions
+                sessions = random.choice(self.sessions)
+                session = sessions.split(":")[2]
+                unformattedSessions = sessions
 
-            respBody = self.client.httpGet(httpClient, user_id)
+                respBody = self.client.httpGet(httpClient, user_id)
 
-            if len(respBody) < 1 or "Login expired" in respBody or "Invalid parameters" in respBody or "Server is" in respBody:
-                self.er += 1
+                if len(respBody) < 1 or "Login expired" in respBody or "Invalid parameters" in respBody or "Server is" in respBody:
+                    self.er += 1
 
-                if self.er > 10000:
-                    self.rateLimited = True
-            
-            elif '"unique_id":"",' in respBody:
-                pass
+                    if self.er > 10000:
+                        self.rateLimited = True
+                
+                elif '"unique_id":"",' in respBody or "reset reason" in respBody:
+                    pass
 
-            elif f'"unique_id":"{username}"' not in respBody and not self.claimed:
-                self.claimed = True
+                elif f'"unique_id":"{username}"' not in respBody and not self.claimed:
+                    self.claimed = True
 
-                self.lock.acquire()
-                respBody = self.client.httpClaim(httpClient, username, session)
+                    self.lock.acquire()
+                    respBody = self.client.httpClaim(httpClient, username, session)
 
-                if ("unique_id" in respBody):
-                    self.claimStuff(username, user_id, session, unformattedSessions, respBody)
+                    if ("success" in respBody):
+                        self.claimStuff(username, user_id, session, unformattedSessions, respBody)
 
-                    sleep(2)
-                    self.claimed = False
+                        sleep(2)
+                        self.claimed = False
 
+                    else:
+                        self.isDeactivated(username, user_id, session, unformattedSessions)
+                        
+                        sleep(2)
+                        self.claimed = False
+
+                    self.lock.release()
                 else:
-                    self.isDeactivated(username, user_id, session)
-                    
-                    sleep(2)
-                    self.claimed = False
+                    self.queue.put(usernames)
+                    self.attempts += 1
 
-                self.lock.release()
-            else:
-                self.queue.put(usernames)
-                self.attempts += 1
+        except Exception:
+            pass
 
     def claimStuff(self, username, user_id, session, unformattedSession, claimlogs):
-        print("[" + RGB(255, 135, 205, "+") + f"] Claimed: " + RGB(255, 135, 205, username) + f" after {self.attempts} attempts")
+        print("[" + RGB(255, 135, 205, "+") + f"] Claimed: " + RGB(255, 135, 205, username) + f" after {self.attempts} attempts                                                                                     ")
         
         self.util.claimFile(username, session, unformattedSession, claimlogs)
         
@@ -280,49 +302,59 @@ class Turbo():
 
         self.util.newFile(self.usernames, "usernames")
         self.util.newFile(self.sessions, "sessions")
-
-        if len(self.sessions) == 0:
-            self.finished = True
         
         self.Queue()
 
+        httpClient = pycurl.Curl()
         self.discord.claimWebhook(username, self.attempts, self.rs)
+        self.client.httpBio(httpClient, session)
 
-    def isDeactivated(self, username, user_id, session):
+        if len(self.sessions) == 0:
+            self.finished = True
+
+    def isDeactivated(self, username, user_id, session, unformattedSession):
         try:
+            httpClient = pycurl.Curl()
+            deactivatedcounter = 0
+
             self.usernames.remove(f"{username}:{user_id}")
 
-            httpClient = pycurl.Curl()
-            usernameSlice = self.client.httpUserId(httpClient, username, None, session)
-            userIdSlice = self.client.httpUserId(httpClient, None, user_id, session)
+            for _ in range(5):
+                claimBody = self.client.httpClaim(httpClient, username, session)
 
-            if ("awesome short" in usernameSlice):
-                print("[" + RGB(255, 135, 205, "+") + f"] Username: " + RGB(255, 135, 205, username) + " swapped after", RGB(255, 135, 205, f"{self.attempts:,} ") + "attempts        \n")
-                
-                newUserId = usernameSlice.split('"userInfo":{"user":{"id":"')[1].split('","')[0]
-                oldUser = userIdSlice.split('"uniqueId":"')[1].split('","')[0]
+                if "success" not in claimBody:
+                    deactivatedcounter += 1
+                else:
+                    return self.claimStuff(username, user_id, session, unformattedSession, claimBody)
 
-                self.usernames.append(f"{username}:{newUserId}")
-                self.util.newFile(self.usernames, "usernames")
+                if deactivatedcounter == 4:
+                    httpClient = pycurl.Curl()
+                    usernameSlice = self.client.httpUserId(httpClient, username, None, session)
+                    userIdSlice = self.client.httpUserId(httpClient, None, user_id, session)
 
-                self.Queue()
-                
-                self.discord.swapMonitor(username, oldUser, user_id, newUserId)
-                    
-            else:
-                print("[" + RGB(255, 135, 205, "!") + f"] Username: " + RGB(255, 135, 205, username) + " deactivated after", RGB(255, 135, 205, f"{self.attempts:,} ") + "attempts \n")
+                    if ("awesome short" in usernameSlice):
+                        print("[" + RGB(255, 135, 205, "+") + f"] Username: " + RGB(255, 135, 205, username) + " swapped after", RGB(255, 135, 205, f"{self.attempts:,} ") + "attempts        \n")
+                        
+                        newUserId = usernameSlice.split('"userInfo":{"user":{"id":"')[1].split('","')[0]
+                        oldUser = userIdSlice.split('"uniqueId":"')[1].split('","')[0]
 
-                self.banned.append(f"{username}:{user_id}")
+                        self.usernames.append(f"{username}:{newUserId}")
+                        self.util.newFile(self.usernames, "usernames")
 
-                self.util.newFile(self.usernames, "usernames")
-                self.util.appendFile(self.banned, "banned")
+                        self.Queue()
+                        
+                        self.discord.swapMonitor(username, oldUser, user_id, newUserId)
+                        
+                    else:
+                        print("[" + RGB(255, 135, 205, "!") + f"] Username: " + RGB(255, 135, 205, username) + " deactivated after", RGB(255, 135, 205, f"{self.attempts:,} ") + "attempts \n")
 
-                self.util.banFile(username, user_id, session)
+                        self.banned.append(f"{username}:{user_id}")
 
-                self.Queue()
+                        self.util.newFile(self.usernames, "usernames")
+                        self.util.banFile(username, user_id, session)
 
-                self.discord.deactivationMonitor(username, user_id)
-
+                        self.Queue()
+                        self.discord.deactivationMonitor(username, user_id)
         except Exception:
             pass
 
@@ -376,11 +408,11 @@ def main():
             break
 
         if (tiktok.finished):
-            print("[" + RGB(10, 168, 252, "-") + f"] All session(s) used - Exiting threads after {tiktok.attempts:,} attempts!")
+            print("[" + RGB(255, 135, 205, "-") + f"] All session(s) used - Exiting threads after {tiktok.attempts:,} attempts!")
             exit(1)
 
         elif (tiktok.rateLimited):
-            print("[" + RGB(10, 168, 252, "-") + f"] Rate limited by tiktok after {tiktok.attempts:,} attempts!")
+            print("[" + RGB(255, 135, 205, "-") + f"] Rate limited by tiktok after {tiktok.attempts:,} attempts!")
             exit(1)
 
 if __name__ == "__main__":
