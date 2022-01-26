@@ -16,4 +16,4 @@ A Tiktok Autoclaimer and Turbo. Automanically checks and claims usernames over a
 
 **Know Issues**
 * Error installing Pycurl:
-    * Pycurl is a linux based package. If the user is on a window's device, it will be required to build the package from scratch.
+    * Pycurl is a linux based package. If the user is on a window's device, they will be required to build the package from scratch or find a binary
