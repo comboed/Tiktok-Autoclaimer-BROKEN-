@@ -1,6 +1,6 @@
 This is being released becuase thee endpoints are all patched.
 
-A Tiktok Autoclaimer and Turbo. Automanically checks and claims usernames over a period time using Tiktok's Mobile 
+A Tiktok Autoclaimer and Turbo. Automanically checks and claims usernames over a period time using Tiktok's Mobile App
 
 **Install**
 * Download Python (Version 3.8) and check 'Enviroment Variable' during setup
