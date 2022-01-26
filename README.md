@@ -1,4 +1,4 @@
-This is being released becuase thee endpoints are all patched.
+This is being released becuase these endpoints are all patched.
 
 A Tiktok Autoclaimer and Turbo. Automanically checks and claims usernames over a period time using Tiktok's Mobile App
 
